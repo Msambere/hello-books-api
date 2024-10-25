@@ -7,23 +7,14 @@ books_bp= Blueprint("books_bp", __name__, url_prefix="/books")
 def get_all_books():
     response_body=[]
     for book in books:
-        response_body.append(
-            {
-                "id": book.id,
-                "title": book.title,
-                "description": book.description
-            }
+        response_body.append(book.to_dict()
         )
     return response_body
 
 @books_bp.get("/<book_id>")
 def get_one_book(book_id):
     book = validate_book(book_id)
-    return{
-        "id":book.id,
-        "title": book.title,
-        "description": book.description
-    },200
+    return book.to_dict(), 200
 
 
 def validate_book(book_id):
