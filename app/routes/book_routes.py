@@ -19,6 +19,23 @@ def create_book():
     }
     return response, 201
 
+@books_bp.get("")
+def get_all_books():
+    query = db.select(Book).order_by(Book.id)
+    books = db.session.scalars(query)
+    # books = db.session.execute(query).scalars() is another option
+
+    response_body = []
+    for book in books:
+        response_body.append(book.to_dict())
+
+
+    return response_body, 200
+
+
+
+
+
 
 def validate_new_book_data():
     request_body = request.get_json()
