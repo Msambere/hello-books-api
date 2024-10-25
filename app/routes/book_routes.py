@@ -8,7 +8,12 @@ books_bp = Blueprint("books_bp", __name__, url_prefix="/books")
 
 @books_bp.post("")
 def create_book():
-    new_book = validate_new_book_data()
+    request_body = request.get_json()
+    title = request_body["title"]
+    description = request_body["description"]
+    validate_new_book_data(title, description)
+
+    new_book = Book(title=title, description=description)
     db.session.add(new_book)
     db.session.commit()
 
@@ -40,11 +45,7 @@ def get_one_book(book_id):
 
 
 
-def validate_new_book_data():
-    request_body = request.get_json()
-    title = request_body["title"]
-    description = request_body["description"]
-
+def validate_new_book_data(title, description):
     if not isinstance(title, str) or not isinstance(description, str):
         response = {"msg": "Invalid book details"}
         abort(make_response(response, 400))
@@ -56,11 +57,8 @@ def validate_new_book_data():
     if book_exists:
         response = {"msg": "Book already exists in database."}
         abort(make_response(response, 400))
-
-    new_book = Book(title=title, description=description)
-
-    return new_book
-
+        
+    return True
 
 # from app.models.book import books
 
