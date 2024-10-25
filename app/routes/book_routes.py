@@ -1,7 +1,48 @@
-from flask import Blueprint, abort, make_response
-# from app.models.book import books
+from flask import Blueprint, abort, make_response, request
+from app.models.book import Book
+from ..db import db
+from sqlalchemy import select
 
-books_bp= Blueprint("books_bp", __name__, url_prefix="/books")
+books_bp = Blueprint("books_bp", __name__, url_prefix="/books")
+
+
+@books_bp.post("")
+def create_book():
+    new_book = validate_new_book_data()
+    db.session.add(new_book)
+    db.session.commit()
+
+    response = {
+        "id": new_book.id,
+        "title": new_book.title,
+        "description": new_book.description,
+    }
+    return response, 201
+
+
+def validate_new_book_data():
+    request_body = request.get_json()
+    title = request_body["title"]
+    description = request_body["description"]
+
+    if not isinstance(title, str) or not isinstance(description, str):
+        response = {"msg": "Invalid book details"}
+        abort(make_response(response, 400))
+
+    book_exists = bool(
+        db.session.query(Book).filter_by(title=title, description=description).first()
+    )
+
+    if book_exists:
+        response = {"msg": "Book already exists in database."}
+        abort(make_response(response, 400))
+
+    new_book = Book(title=title, description=description)
+
+    return new_book
+
+
+# from app.models.book import books
 
 # @books_bp.get("")
 # def get_all_books():
@@ -28,5 +69,3 @@ books_bp= Blueprint("books_bp", __name__, url_prefix="/books")
 #             return book
 #     response = {"msg": f"Book {book_id} not found."}
 #     abort(make_response(response,404))
-
-    
