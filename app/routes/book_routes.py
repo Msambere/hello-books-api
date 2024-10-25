@@ -29,9 +29,12 @@ def get_all_books():
     for book in books:
         response_body.append(book.to_dict())
 
-
     return response_body, 200
 
+@books_bp.get("/<book_id>")
+def get_one_book(book_id):
+    book = validate_book(book_id)
+    return book.to_dict(), 200
 
 
 
@@ -75,14 +78,23 @@ def validate_new_book_data():
 #     return book.to_dict(), 200
 
 
-# def validate_book(book_id):
-#     try:
-#         book_id = int(book_id)
-#     except:
-#         response = {"msg": f"Book {book_id} is invalid."}
-#         abort(make_response(response,400))
-#     for book in books:
-#         if book.id == book_id:
-#             return book
-#     response = {"msg": f"Book {book_id} not found."}
-#     abort(make_response(response,404))
+def validate_book(book_id):
+    try:
+        book_id = int(book_id)
+    except:
+        response = {"msg": f"Book {book_id} is invalid."}
+        abort(make_response(response,400))
+
+    # found_book = db.session.query(Book).filter_by(id =book_id).first()
+    
+    book_exists = bool(
+        db.session.query(Book).filter_by(id = book_id).first()
+    )
+
+    if not book_exists:
+        response = {"msg": f"Book {book_id} not found."}
+        abort(make_response(response,404))
+    
+    found_book = db.select(Book).where(Book.id == book_id)
+    book =db.session.scalar(found_book) 
+    return book
