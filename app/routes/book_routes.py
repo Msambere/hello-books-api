@@ -1,4 +1,4 @@
-from flask import Blueprint, abort, make_response, request
+from flask import Blueprint, abort, make_response, request, Response
 from app.models.book import Book
 from ..db import db
 from sqlalchemy import select
@@ -38,6 +38,17 @@ def get_all_books():
 def get_one_book(book_id):
     book = validate_book_id(book_id)
     return book.to_dict(), 200
+
+@books_bp.put("/<book_id>")
+def update_book(book_id):
+    book = validate_book_id(book_id)
+    request_body = request.get_json()
+    
+    book.title= request_body['title']
+    book.description = request_body['description']
+    db.session.commit()
+
+    return Response(status=204, mimetype="application/json")
 
 
 
