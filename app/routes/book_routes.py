@@ -25,10 +25,13 @@ def create_book():
 @books_bp.get("")
 def get_all_books():
     title_param = request.args.get("title")
+    description_param = request.args.get("description")
+    query = db.select(Book)
     if title_param:
-        query = db.select(Book).where(Book.title.ilike(f"%{title_param}%")).order_by(Book.id)
-    else:
-        query = db.select(Book).order_by(Book.id)
+        query = query.where(Book.title.ilike(f"%{title_param}%"))
+    if description_param:
+        query = query.where(Book.description.ilike(f"%{description_param}%"))
+    query = query.order_by(Book.id)
     books = db.session.scalars(query)
     # books = db.session.execute(query).scalars() is another option
 
@@ -36,8 +39,15 @@ def get_all_books():
     for book in books:
         response_body.append(book.to_dict())
 
-    if title_param and not response_body:
-        response = {"msg": f"No book titles containing '{title_param}' found."}
+    if not response_body:
+        missing_params= []
+        if title_param:
+            missing_params.append(title_param)
+        if description_param:
+            missing_params.append(description_param)
+        missing_params=" or ".join(missing_params)
+        
+        response = {"msg": f"No book titles containing '{missing_params}' found."}
         abort(make_response(response,404))
 
     return response_body, 200
