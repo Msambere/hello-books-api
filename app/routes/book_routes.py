@@ -38,8 +38,9 @@ def get_all_books():
     response_body = []
     for book in books:
         response_body.append(book.to_dict())
-
-    if not response_body:
+    
+    
+    if not response_body and (title_param or description_param):
         missing_params= []
         if title_param:
             missing_params.append(title_param)
