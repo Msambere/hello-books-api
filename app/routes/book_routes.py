@@ -45,7 +45,7 @@ def get_all_books():
             missing_params.append(title_param)
         if description_param:
             missing_params.append(description_param)
-        missing_params=" or ".join(missing_params)
+        missing_params=" or" .join(missing_params)
         
         response = {"msg": f"No book titles containing '{missing_params}' found."}
         abort(make_response(response,404))
